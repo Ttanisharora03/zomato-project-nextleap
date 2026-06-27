@@ -13,7 +13,12 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Initializing dataset...")
-    load_data()
+    try:
+        load_data()
+        print("Server startup complete.")
+    except Exception as e:
+        print(f"FATAL: Failed to initialize dataset: {e}")
+        raise
     yield
     print("Shutting down...")
 

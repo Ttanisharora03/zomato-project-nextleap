@@ -31,7 +31,6 @@ dist/
 # Data & Database Files
 *.sqlite3
 *.db
-*.parquet
 
 # ==========================================
 # Node.js & Frontend (Next.js)

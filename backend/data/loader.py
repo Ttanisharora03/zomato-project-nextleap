@@ -1,4 +1,5 @@
 import os
+import time
 import pandas as pd
 import numpy as np
 # pyrefly: ignore [missing-import]
@@ -11,14 +12,26 @@ def load_data() -> pd.DataFrame:
     if _df_cache is not None:
         return _df_cache
 
+    start_time = time.time()
     parquet_path = os.path.join(os.path.dirname(__file__), "zomato_dataset.parquet")
+
     if os.path.exists(parquet_path):
         print("Loading Zomato dataset from local parquet file...")
         df = pd.read_parquet(parquet_path)
+        print(f"Loaded {len(df)} rows from parquet in {time.time() - start_time:.2f}s")
     else:
-        print("Loading Zomato dataset from Hugging Face...")
-        ds = load_dataset("ManikaSaini/zomato-restaurant-recommendation", split="train")
-        df = ds.to_pandas()
+        print("WARNING: Local parquet file not found at", parquet_path)
+        print("Falling back to Hugging Face download (this may fail on constrained environments)...")
+        try:
+            ds = load_dataset("ManikaSaini/zomato-restaurant-recommendation", split="train")
+            df = ds.to_pandas()
+            print(f"Downloaded {len(df)} rows from HF in {time.time() - start_time:.2f}s")
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to load dataset: {e}\n"
+                "The parquet file is missing and Hugging Face download failed.\n"
+                "Run 'python download_data.py' locally and commit backend/data/zomato_dataset.parquet to git."
+            )
 
     # Rename columns to match the standard expected by the application
     rename_map = {
@@ -71,6 +84,9 @@ def load_data() -> pd.DataFrame:
     # Deduplicate restaurants to ensure unique establishments per location
     if "restaurant_name" in df.columns and "location" in df.columns:
         df = df.drop_duplicates(subset=["restaurant_name", "location"])
+
+    total_time = time.time() - start_time
+    print(f"Dataset ready: {len(df)} restaurants loaded in {total_time:.2f}s")
 
     _df_cache = df
     return _df_cache
