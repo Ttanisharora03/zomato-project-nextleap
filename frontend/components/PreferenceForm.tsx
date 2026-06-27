@@ -83,7 +83,8 @@ export default function PreferenceForm({ onLoading, onResults, onPreferences }: 
     }
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/recommend";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const apiUrl = `${baseUrl.replace(/\/+$/, "")}/recommend`;
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: {
