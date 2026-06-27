@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+pydantic
+datasets
+pandas
+pyarrow
+langchain
+langchain-groq
+groq
